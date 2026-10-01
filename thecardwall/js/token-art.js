@@ -12,6 +12,11 @@ const cache = new Map();
 // Static hosts without the Worker answer the endpoint with a plain 404 or an
 // HTML page; after that the page goes straight to the chain.
 let endpointMissing = !ART_ENDPOINT;
+// When the endpoint itself cannot reach the chain (e.g. the public RPC
+// rate-limits Cloudflare), the browser reads the chain directly; after two
+// such answers in a row it stops asking the endpoint for this visit.
+let endpointStrikes = 0;
+const ENDPOINT_TIMEOUT_MS = 5000;
 
 export class TokenArtError extends Error {
   constructor(code, message) {
@@ -36,9 +41,12 @@ export function loadTokenArt(collection, tokenId) {
 async function fetchArt(collection, tokenId) {
   const failures = [];
   if (!endpointMissing) {
+    const timeout = new AbortController();
+    const timer = setTimeout(() => timeout.abort(), ENDPOINT_TIMEOUT_MS);
     try {
       const res = await fetch(`${ART_ENDPOINT}${collection.id}/${tokenId}`, {
         headers: { accept: 'image/svg+xml,image/*;q=0.9' },
+        signal: timeout.signal,
       });
       const type = res.headers.get('content-type') || '';
       if (res.status === 404 && res.headers.get('x-cardwall-art') === 'not-found') {
@@ -46,13 +54,18 @@ async function fetchArt(collection, tokenId) {
       }
       if (res.ok && type.startsWith('image/')) {
         const blob = await res.blob();
+        endpointStrikes = 0;
         return type.includes('svg') ? artFromSvgText(await blob.text()) : artFromBlob(blob);
       }
       if (res.status === 404 || (res.ok && !type.startsWith('image/'))) endpointMissing = true;
+      else if (++endpointStrikes >= 2) endpointMissing = true;
       failures.push(`endpoint ${res.status}`);
     } catch (error) {
       if (error.code === 'not_found') throw error;
-      failures.push(`endpoint ${error.message}`);
+      if (++endpointStrikes >= 2) endpointMissing = true;
+      failures.push(`endpoint ${error.name === 'AbortError' ? 'timeout' : error.message}`);
+    } finally {
+      clearTimeout(timer);
     }
   }
   for (const rpc of RPC_URLS) {

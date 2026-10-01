@@ -2,7 +2,7 @@
 // error handling, with fetch, caches and the ASSETS binding stubbed.
 import assert from 'node:assert/strict';
 import worker from '../src/index.js';
-import { decodeAbiString, cacheControlFor } from '../src/lib.js';
+import { decodeAbiString, cacheControlFor, rpcUrls } from '../src/lib.js';
 
 const abi = (text) => {
   const hex = Buffer.from(text, 'utf8').toString('hex');
@@ -15,11 +15,16 @@ const store = new Map();
 globalThis.caches = { default: { match: async (req) => store.get(req.url)?.clone(), put: async (req, res) => { store.set(req.url, res); } } };
 let rpcCalls = 0;
 let rpcMode = 'ok';
+const hosts = [];
+let rateLimitsLeft = 0;
 globalThis.fetch = async (url, init) => {
   rpcCalls++;
+  hosts.push(new URL(url).host);
   const body = JSON.parse(init.body);
   const id = parseInt(body.params[0].data.slice(10), 16);
   if (rpcMode === 'down') return new Response('busy', { status: 503 });
+  if (rpcMode === 'public-limited' && new URL(url).host === 'rpc.mainnet.chain.robinhood.com') return new Response('slow down', { status: 429 });
+  if (rateLimitsLeft > 0) { rateLimitsLeft--; return new Response('slow down', { status: 429 }); }
   if (id > 4444) return Response.json({ jsonrpc: '2.0', id: 1, error: { code: 3, message: 'execution reverted', data: '0x7e273289' } });
   return Response.json({ jsonrpc: '2.0', id: 1, result: abi(tokenUri(id)) });
 };
@@ -59,11 +64,29 @@ assert.equal(res.headers.get('x-cardwall-art'), 'not-found');
 res = await get('/thecardwall/api/art/punks/1');
 assert.equal(res.status, 404);
 
+// One 429 is retried on the same endpoint.
+rateLimitsLeft = 1;
+res = await get('/thecardwall/api/art/interns/21');
+assert.equal(res.status, 200);
+
+// A throttled public RPC falls through to the next endpoint in RPC_URL; the
+// error text never includes full URLs (they can carry API keys).
+assert.deepEqual(rpcUrls(' https://a.example/key1 , https://b.example '), ['https://a.example/key1', 'https://b.example']);
+assert.deepEqual(rpcUrls(''), ['https://rpc.mainnet.chain.robinhood.com']);
+rpcMode = 'public-limited';
+hosts.length = 0;
+const envWithBackup = { ...env, RPC_URL: 'https://rpc.mainnet.chain.robinhood.com,https://backup.example/secret-key' };
+res = await worker.fetch(new Request('https://moxapp.io/thecardwall/api/art/interns/22'), envWithBackup, ctx);
+assert.equal(res.status, 200);
+assert.deepEqual(hosts, ['rpc.mainnet.chain.robinhood.com', 'rpc.mainnet.chain.robinhood.com', 'backup.example']);
+
+// Every endpoint down: a fast 503 the page recognises, nothing cached, no keys leaked.
 rpcMode = 'down';
-res = await get('/thecardwall/api/art/interns/12');
-assert.equal(res.status, 502);
-assert.equal(res.headers.get('x-cardwall-art'), null);
+res = await worker.fetch(new Request('https://moxapp.io/thecardwall/api/art/interns/12'), envWithBackup, ctx);
+assert.equal(res.status, 503);
+assert.equal(res.headers.get('x-cardwall-art'), 'unavailable');
 assert.equal(res.headers.get('cache-control'), 'no-store');
+assert.doesNotMatch(await res.text(), /secret-key/);
 
 res = await worker.fetch(new Request('https://moxapp.io/thecardwall/api/art/interns/12', { method: 'POST' }), env, ctx);
 assert.equal(res.status, 405);

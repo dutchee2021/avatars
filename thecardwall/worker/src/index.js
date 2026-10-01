@@ -7,8 +7,8 @@
 // rate-limit exposure in browsers), not a hard dependency.
 
 import {
-  ART_CSP, ART_EDGE_TTL, CONTRACTS, DEFAULT_RPC, MISSING_EDGE_TTL,
-  cacheControlFor, imageFromTokenUri, readTokenUri,
+  ART_CSP, ART_EDGE_TTL, CONTRACTS, MISSING_EDGE_TTL,
+  cacheControlFor, imageFromTokenUri, readTokenUri, rpcUrls,
 } from './lib.js';
 
 const PREFIX = '/thecardwall';
@@ -52,7 +52,7 @@ async function serveArt(request, env, ctx, collection, rawId) {
 
   let response;
   try {
-    const uri = await readTokenUri(env.RPC_URL || DEFAULT_RPC, contract, tokenId);
+    const uri = await readTokenUri(rpcUrls(env.RPC_URL), contract, tokenId);
     const image = await imageFromTokenUri(uri);
     response = new Response(image.body, {
       headers: {
@@ -65,7 +65,12 @@ async function serveArt(request, env, ctx, collection, rawId) {
   } catch (error) {
     if (error.code !== 'not_found') {
       console.warn(`art ${collection}/${tokenId}: ${error.message}`);
-      return text(`Art unavailable: ${error.message}`, 502, { 'cache-control': 'no-store' });
+      // The page then reads the chain from the browser instead.
+      return text(`Art unavailable: ${error.message}`, 503, {
+        'x-cardwall-art': 'unavailable',
+        'retry-after': '30',
+        'cache-control': 'no-store',
+      });
     }
     response = missing(`${collection} #${tokenId} is not minted`);
   }

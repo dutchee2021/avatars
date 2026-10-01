@@ -31,22 +31,63 @@ export function cacheControlFor(path) {
   return 'public, max-age=0, must-revalidate';
 }
 
-export async function readTokenUri(rpc, contract, tokenId) {
+// Rate limits and gateway hiccups are worth a second try; anything else is not.
+const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** RPC_URL may list several endpoints, comma-separated, tried in order. */
+export function rpcUrls(value) {
+  const list = String(value || '').split(',').map((url) => url.trim()).filter(Boolean);
+  return list.length ? list : [DEFAULT_RPC];
+}
+
+async function callTokenUri(rpc, contract, tokenId) {
   const data = TOKEN_URI_SELECTOR + BigInt(tokenId).toString(16).padStart(64, '0');
-  const res = await fetch(rpc, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: contract, data }, 'latest'] }),
-  });
-  if (!res.ok) throw new ArtError('unavailable', `RPC HTTP ${res.status}`);
+  let res;
+  try {
+    res = await fetch(rpc, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: contract, data }, 'latest'] }),
+    });
+  } catch (error) {
+    throw Object.assign(new ArtError('unavailable', `network ${error.message}`), { retryable: true });
+  }
+  if (!res.ok) {
+    throw Object.assign(new ArtError('unavailable', `RPC HTTP ${res.status}`), { retryable: RETRYABLE_STATUS.has(res.status) });
+  }
   const body = await res.json();
   if (body.error) {
     const message = `${body.error.message || ''} ${typeof body.error.data === 'string' ? body.error.data : ''}`.trim();
     if (/revert|nonexistent|invalid token|not minted|query for/i.test(message)) throw new ArtError('not_found', message);
-    throw new ArtError('unavailable', message || 'RPC error');
+    throw Object.assign(new ArtError('unavailable', message || 'RPC error'), { retryable: /rate|limit|capacity|busy|timeout/i.test(message) });
   }
   if (!body.result || body.result === '0x') throw new ArtError('not_found', 'empty tokenURI');
   return decodeAbiString(body.result);
+}
+
+/**
+ * tokenURI(tokenId) from the first RPC that answers. Each endpoint gets a
+ * retry on rate limits and gateway errors. Error messages name hosts only,
+ * never full URLs (provider URLs often carry an API key).
+ */
+export async function readTokenUri(rpcs, contract, tokenId, { attempts = 2, delayMs = 350 } = {}) {
+  const failures = [];
+  for (const rpc of Array.isArray(rpcs) ? rpcs : rpcUrls(rpcs)) {
+    let host = 'rpc';
+    try { host = new URL(rpc).host; } catch { /* keep the generic name */ }
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      try {
+        return await callTokenUri(rpc, contract, tokenId);
+      } catch (error) {
+        if (error.code === 'not_found') throw error;
+        failures.push(`${host}: ${error.message}`);
+        if (!error.retryable || attempt === attempts) break;
+        await sleep(delayMs * attempt);
+      }
+    }
+  }
+  throw new ArtError('unavailable', failures.join('; '));
 }
 
 export function decodeAbiString(hex) {

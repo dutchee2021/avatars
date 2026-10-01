@@ -31,8 +31,11 @@ The Worker does three things:
    metadata and returns the token image (SVG or raster), cached at the edge for
    24 hours. An unminted token returns `404` with the header
    `x-cardwall-art: not-found`, which the page shows as "NOT MINTED YET". If the
-   chain is unreachable it returns `502` and the page falls back to calling the
-   RPC from the browser, then to a placeholder.
+   chain is unreachable (the free public RPC rate-limits Cloudflare's shared
+   IPs with `429`), it retries, tries any backup RPCs, then returns `503` with
+   `x-cardwall-art: unavailable`. The page then reads the chain from the
+   visitor's browser, which the public RPC allows; after two such answers it
+   stops asking the Worker for that visit.
 
 Contracts (also in `js/config.js`):
 
@@ -84,13 +87,13 @@ Replace `$HOST` with the hostname you deployed to.
 curl -sI https://$HOST/thecardwall                      # 301, location: /thecardwall/
 curl -s  https://$HOST/thecardwall/build.json           # commit = the one you built
 curl -sI https://$HOST/thecardwall/assets/slab.glb      # 200, content-type: model/gltf-binary
-curl -sI https://$HOST/thecardwall/api/art/stonkbrokers/4354   # 200, content-type: image/...
-curl -sI https://$HOST/thecardwall/api/art/interns/9999999     # 404 + x-cardwall-art: not-found
+curl -sI https://$HOST/thecardwall/api/art/stonkbrokers/4354   # 200 image/..., or 503 + x-cardwall-art: unavailable
 ```
 
-If the art endpoint returns `502`, read the reason in the body and in
-`npx wrangler tail` (add `--env test` for the test Worker). The public RPC is
-rate limited; set a dedicated endpoint as a secret (see "Settings").
+`503` with `x-cardwall-art: unavailable` means the public RPC throttled the
+Worker; the page still loads art from the browser, so it is a pass. Confirm in
+a browser that random tokens show real art. For the Worker's edge cache to do
+its job, set a dedicated RPC as a secret (see "Settings").
 
 Then check by hand (owner's phone and a desktop browser):
 
@@ -147,7 +150,7 @@ Then check by hand (owner's phone and a desktop browser):
 
 | Setting | How | Default |
 | --- | --- | --- |
-| Dedicated RPC endpoint for the art endpoint | `npx wrangler secret put RPC_URL --env production` (and `--env test`) | `https://rpc.mainnet.chain.robinhood.com` |
+| Dedicated RPC endpoint(s) for the art endpoint (comma-separated, tried in order) | `npx wrangler secret put RPC_URL --env production` (and `--env test`) | `https://rpc.mainnet.chain.robinhood.com` |
 | Test hostname | `env.test.routes` in `wrangler.jsonc` | `thecardwall-test.moxapp.io` |
 | Edge cache for token art | `ART_EDGE_TTL` in `worker/src/lib.js` | 24 hours |
 
