@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>THECARDWALL.COM | STONKBROKER #4354</title>
+  <meta name="description" content="Spin, save and place your StonkBroker or Intern slab in AR. THECARDWALL.COM on MOX.">
+  <meta name="theme-color" content="#050607">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <link rel="preload" href="assets/slab.glb" as="fetch" crossorigin>
+  <link rel="preload" href="assets/fonts/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <main class="stage" id="stage" aria-label="3D slab viewer"></main>
+  <div class="stage-glow" aria-hidden="true"></div>
+
+  <!-- Top navigation rail: literal MOX mark, two-line identity, cart and Claw Machine. -->
+  <header class="plate">
+    <div class="plate-left">
+      <img class="mox-nav-logo" src="assets/m-nav-logo.png" alt="MOX" draggable="false">
+    </div>
+    <div class="plate-id">
+      <div class="plate-titles">
+        <p class="eyebrow" id="siteName">THECARDWALL.COM</p>
+        <h1 id="tokenTitle">STONKBROKER #4354</h1>
+      </div>
+    </div>
+    <div class="plate-right">
+      <a class="ar-btn icon-action buy-btn" id="cartBtn" target="_blank" rel="noopener noreferrer"
+         href="https://opensea.io/item/robinhood/0x539cdd042c2f3d93ebc5be7dfff0c79f3b4fabf0/4354"
+         title="Buy on OpenSea" aria-label="Buy STONKBROKER #4354 on OpenSea">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3.5 5h2l1.7 9.2h9.7l2-6.2H6.1"></path><circle cx="9" cy="18" r="1.25"></circle><circle cx="17" cy="18" r="1.25"></circle>
+        </svg>
+      </a>
+      <a class="ar-btn otherside-btn" id="clawBtn" href="https://thecardwall.com/alley" target="_blank" rel="noopener">Claw Machine</a>
+    </div>
+  </header>
+
+  <!-- Bar 2: download loop, token id, random, AR. -->
+  <form class="cw-bar token-bar" id="tokenBar" autocomplete="off" novalidate aria-label="Token">
+    <button class="token-step-button" id="downloadBtn" type="button" aria-label="Download MP4 loop" title="Download MP4 loop" aria-haspopup="dialog" aria-controls="saveDialog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 18v2h14v-2"></path>
+      </svg>
+    </button>
+    <input id="tokenInput" type="number" inputmode="numeric" enterkeyhint="done" min="1" max="4444" step="1"
+           placeholder="TYPE ANY ID#" value="4354" aria-label="Token ID">
+    <button class="token-random-btn" id="randomBtn" type="button" aria-label="Load random token" title="Random token">
+      <svg viewBox="0 0 30 24" aria-hidden="true">
+        <g transform="rotate(-16 9 14)">
+          <rect x="3" y="8" width="12" height="12" rx="2.4" fill="var(--paper)" stroke="currentColor" stroke-width="1.8"></rect>
+          <circle cx="7" cy="12" r="1" fill="currentColor"></circle>
+          <circle cx="11" cy="16" r="1" fill="currentColor"></circle>
+        </g>
+        <g transform="rotate(18 20 9)">
+          <rect x="14" y="3" width="12" height="12" rx="2.4" fill="var(--paper)" stroke="currentColor" stroke-width="1.8"></rect>
+          <circle cx="18" cy="7" r="1" fill="currentColor"></circle>
+          <circle cx="22" cy="7" r="1" fill="currentColor"></circle>
+          <circle cx="20" cy="9" r="1" fill="currentColor"></circle>
+          <circle cx="18" cy="11" r="1" fill="currentColor"></circle>
+          <circle cx="22" cy="11" r="1" fill="currentColor"></circle>
+        </g>
+      </svg>
+    </button>
+    <button class="ar-square" id="arBtn" type="button" aria-label="View in AR" title="View in AR">AR</button>
+  </form>
+
+  <!-- Bar 1: collection picker (label and chevron both open the compact menu). -->
+  <div class="cw-bar collection-bar" id="collectionBar">
+    <div class="collection-shell">
+      <button class="collection-label" id="collectionLabel" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="collectionMenu">STONKBROKERS</button>
+      <div class="collection-menu" id="collectionMenu" role="listbox" aria-label="Collection" hidden>
+        <button class="collection-option" type="button" role="option" data-collection="stonkbrokers" aria-selected="true">STONKBROKERS</button>
+        <button class="collection-option" type="button" role="option" data-collection="interns" aria-selected="false">THE INTERNS</button>
+      </div>
+    </div>
+    <button class="collection-chevron" id="collectionChevron" type="button" aria-label="Choose collection" aria-haspopup="listbox" aria-expanded="false" aria-controls="collectionMenu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"></polyline></svg>
+    </button>
+  </div>
+
+  <!-- Inline token loader: the MOX Clubhouse completion ring. -->
+  <div class="token-loader" id="tokenLoader" hidden aria-hidden="true">
+    <div class="token-loader-ring">
+      <svg viewBox="0 0 42 42"><circle class="track" cx="21" cy="21" r="17"></circle><circle class="spin" cx="21" cy="21" r="17"></circle></svg>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- MP4 save surface (MOX Feed/Clubhouse share modal). -->
+  <section class="save-layer" id="saveDialog" role="dialog" aria-modal="true" aria-labelledby="saveTitle" tabindex="-1" hidden>
+    <div class="save-dialog">
+      <button class="save-dismiss" type="button" data-close aria-label="Close" title="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"></path></svg>
+      </button>
+      <div class="save-heading"><span>SHARE</span><h2 id="saveTitle">STONKBROKER #4354</h2></div>
+      <div class="save-link">
+        <input id="saveLink" type="text" readonly aria-label="Link to this slab">
+        <button class="save-copy" id="saveCopy" type="button" aria-label="Copy link" title="Copy link" data-copied="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+        </button>
+      </div>
+      <p class="save-status" id="saveStatus" role="status" aria-live="polite" hidden></p>
+      <div class="save-actions">
+        <a class="save-post" id="savePost" href="https://twitter.com/intent/tweet" target="_blank" rel="noreferrer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.59 13.51 6.83 3.98M15.41 6.51 8.59 10.49"></path></svg>
+          POST TO X
+        </a>
+        <button class="save-download" id="saveDownload" type="button" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 18v2h14v-2"></path></svg>
+          <span id="saveDownloadLabel">LOADING 0%</span>
+        </button>
+      </div>
+      <a class="save-privacy" href="https://moxapp.io/privacy" target="_blank" rel="noreferrer">PRIVACY / PRODUCT ANALYTICS</a>
+    </div>
+  </section>
+
+  <!-- Desktop AR handoff. -->
+  <section class="save-layer" id="qrDialog" role="dialog" aria-modal="true" aria-labelledby="qrTitle" tabindex="-1" hidden>
+    <div class="save-dialog qr-dialog">
+      <button class="save-dismiss" type="button" data-close aria-label="Close" title="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"></path></svg>
+      </button>
+      <div class="save-heading"><span>VIEW IN AR</span><h2 id="qrTitle">STONKBROKER #4354</h2></div>
+      <div class="qr-frame"><canvas id="qrCanvas" width="232" height="232" aria-label="QR code"></canvas></div>
+      <p class="qr-copy">Scan with your phone camera to place this slab on any table or floor. iPhone opens AR Quick Look; Android opens ARCore in Chrome.</p>
+      <div class="save-link">
+        <input id="qrLink" type="text" readonly aria-label="Phone link">
+        <button class="save-copy" id="qrCopy" type="button" aria-label="Copy link" title="Copy link" data-copied="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOX "IRL IS THE ALPHA" launch loader. -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-card">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">LOADING</div>
+    </div>
+  </div>
+
+  <noscript><p class="noscript">THECARDWALL.COM needs JavaScript and WebGL.</p></noscript>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+// The Card Wall: assets Worker for moxapp.io/thecardwall (see ../DEPLOY.md).
+// Build the asset folder first:  node scripts/build.mjs
+{
+  "name": "thecardwall",
+  "main": "src/index.js",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    // The Worker answers /thecardwall/api/* and adds headers to every asset.
+    "run_worker_first": true
+  },
+  "observability": { "enabled": true },
+  // No environment flag: a workers.dev preview at
+  // https://thecardwall.<account-subdomain>.workers.dev/thecardwall/
+  "workers_dev": true,
+
+  "env": {
+    // Test hostname on the MOX zone (the moment-test.moxapp.io pattern).
+    "test": {
+      "name": "thecardwall-test",
+      "workers_dev": false,
+      "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true },
+      "routes": [{ "pattern": "thecardwall-test.moxapp.io", "custom_domain": true }]
+    },
+    // Production. Deploy ONLY after the owner says "ship it" (MOX release rule).
+    // These routes are more specific than the moxapp.io/* route of the
+    // mox-pfp-feed Worker, so they take precedence for /thecardwall only.
+    "production": {
+      "name": "thecardwall",
+      "workers_dev": false,
+      "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true },
+      "routes": [
+        { "pattern": "moxapp.io/thecardwall", "zone_name": "moxapp.io" },
+        { "pattern": "moxapp.io/thecardwall/*", "zone_name": "moxapp.io" }
+      ]
+    }
+  }
+}

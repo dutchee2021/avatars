@@ -1,0 +1,16 @@
+{
+  "name": "thecardwall-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/test-worker.mjs",
+    "dev": "node scripts/build.mjs && wrangler dev",
+    "deploy:preview": "node scripts/build.mjs && wrangler deploy",
+    "deploy:test": "node scripts/build.mjs && wrangler deploy --env test",
+    "deploy:production": "node scripts/build.mjs && wrangler deploy --env production"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
