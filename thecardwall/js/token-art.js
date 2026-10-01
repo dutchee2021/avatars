@@ -9,6 +9,9 @@ import { ART_ENDPOINT, RPC_URLS, IPFS_GATEWAY } from './config.js';
 
 const TOKEN_URI_SELECTOR = '0xc87b56dd'; // tokenURI(uint256)
 const cache = new Map();
+// Static hosts without the Worker answer the endpoint with a plain 404 or an
+// HTML page; after that the page goes straight to the chain.
+let endpointMissing = !ART_ENDPOINT;
 
 export class TokenArtError extends Error {
   constructor(code, message) {
@@ -32,7 +35,7 @@ export function loadTokenArt(collection, tokenId) {
 
 async function fetchArt(collection, tokenId) {
   const failures = [];
-  if (ART_ENDPOINT) {
+  if (!endpointMissing) {
     try {
       const res = await fetch(`${ART_ENDPOINT}${collection.id}/${tokenId}`, {
         headers: { accept: 'image/svg+xml,image/*;q=0.9' },
@@ -45,6 +48,7 @@ async function fetchArt(collection, tokenId) {
         const blob = await res.blob();
         return type.includes('svg') ? artFromSvgText(await blob.text()) : artFromBlob(blob);
       }
+      if (res.status === 404 || (res.ok && !type.startsWith('image/'))) endpointMissing = true;
       failures.push(`endpoint ${res.status}`);
     } catch (error) {
       if (error.code === 'not_found') throw error;
