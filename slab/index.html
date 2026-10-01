@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Card Slab Viewer</title>
+  <meta name="description" content="3D graded trading card slab with a swappable card and label. View it in AR.">
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.2.0/model-viewer.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --stage: #070708;
+      --panel: #121215;
+      --raised: #1b1b20;
+      --line: #2a2a31;
+      --text: #ececf1;
+      --muted: #9b9ba8;
+      --accent: #f0f0f4;
+      --accent-text: #111114;
+      --danger: #ff7a7a;
+      --radius: 10px;
+      font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: var(--stage);
+      color: var(--text);
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      overflow: hidden;
+    }
+    .stage { position: relative; min-width: 0; min-height: 0; }
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at 50% 42%, #1a1a1f 0%, var(--stage) 62%);
+      --poster-color: transparent;
+    }
+    .ar-button {
+      position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%);
+      border: 0; border-radius: 999px; padding: 10px 18px;
+      background: var(--accent); color: var(--accent-text); font: inherit; font-weight: 600;
+      cursor: pointer;
+    }
+    .drop-overlay {
+      position: absolute; inset: 12px; display: grid; place-items: center;
+      border: 2px dashed var(--muted); border-radius: 16px;
+      background: rgb(0 0 0 / 0.55); font-size: 18px; pointer-events: none;
+    }
+    .drop-overlay[hidden] { display: none; }
+    .toast {
+      position: absolute; left: 50%; top: 16px; transform: translateX(-50%);
+      background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 8px 14px; max-width: calc(100% - 32px);
+    }
+    .toast.error { border-color: var(--danger); color: var(--danger); }
+    .toast[hidden] { display: none; }
+
+    .panel {
+      background: var(--panel); border-left: 1px solid var(--line);
+      overflow-y: auto; padding: 18px 18px 28px;
+    }
+    .panel h1 { font-size: 17px; margin: 0 0 4px; }
+    .panel .lede { color: var(--muted); margin: 0 0 14px; }
+    .panel-toggle { display: none; }
+    section { border-top: 1px solid var(--line); padding: 14px 0 4px; }
+    h2 { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .row.single { grid-template-columns: 1fr; }
+    label.field { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+    input[type="text"], input[type="url"] {
+      width: 100%; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--line);
+      background: var(--raised); color: var(--text); font: inherit;
+    }
+    input[type="color"] {
+      width: 100%; height: 34px; padding: 2px; border-radius: 8px; border: 1px solid var(--line); background: var(--raised);
+    }
+    .file {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px;
+      border: 1px dashed var(--line); background: var(--raised); cursor: pointer; min-width: 0;
+    }
+    .file:hover { border-color: var(--muted); }
+    .file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .file b { font-weight: 600; white-space: nowrap; }
+    .file span { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+    .segmented { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+    .segmented button { flex: 1; }
+    .segmented button + button { border-left: 1px solid var(--line); }
+    button {
+      font: inherit; color: var(--text); background: var(--raised); border: 0;
+      padding: 7px 10px; cursor: pointer;
+    }
+    .segmented button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); font-weight: 600; }
+    .btn { border: 1px solid var(--line); border-radius: 8px; }
+    .btn:hover { border-color: var(--muted); }
+    .btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .preview { width: 100%; border-radius: 4px; display: block; margin: 2px 0 10px; }
+    .hint { color: var(--muted); font-size: 12px; margin: 4px 0 10px; }
+    .check { display: flex; gap: 8px; align-items: center; color: var(--muted); }
+    [hidden] { display: none !important; }
+
+    @media (max-width: 760px) {
+      body { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+      .panel {
+        border-left: 0; border-top: 1px solid var(--line);
+        max-height: 55vh; padding: 0 16px 20px;
+      }
+      .panel-toggle {
+        display: block; position: sticky; top: 0; z-index: 1; width: calc(100% + 32px); margin: 0 -16px;
+        padding: 12px 16px; text-align: left; font-weight: 600; background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .panel.collapsed { max-height: none; overflow: hidden; }
+      .panel.collapsed .panel-body { display: none; }
+      .panel-body { padding-top: 12px; }
+      .ar-button { bottom: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" id="stage">
+    <model-viewer id="viewer" src="slab.glb" alt="Graded trading card slab"
+      camera-controls touch-action="pan-y" interaction-prompt="none"
+      camera-orbit="-24deg 84deg auto" field-of-view="26deg"
+      environment-image="neutral" exposure="1" shadow-intensity="0"
+      ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor">
+      <button slot="ar-button" class="ar-button">View in your space</button>
+    </model-viewer>
+    <div class="drop-overlay" id="drop" hidden>Drop an image to replace the card</div>
+    <div class="toast" id="toast" role="status" hidden></div>
+  </main>
+
+  <aside class="panel" id="panel">
+    <button class="panel-toggle" id="panel-toggle" aria-expanded="true">Customize</button>
+    <div class="panel-body">
+      <h1>Card slab</h1>
+      <p class="lede">Swap the card and label, then download the model or view it in AR.</p>
+
+      <section aria-labelledby="h-card">
+        <h2 id="h-card">Card</h2>
+        <div class="row">
+          <label class="file"><input type="file" accept="image/*" data-target="cardFront"><b>Front</b><span>Choose image</span></label>
+          <label class="file"><input type="file" accept="image/*" data-target="cardBack"><b>Back</b><span>Choose image</span></label>
+        </div>
+        <div class="segmented" role="group" aria-label="Image fit" id="fit">
+          <button type="button" data-fit="cover" aria-pressed="true">Fill</button>
+          <button type="button" data-fit="contain" aria-pressed="false">Fit</button>
+          <button type="button" data-fit="stretch" aria-pressed="false">Stretch</button>
+        </div>
+        <p class="hint">Card images are 2.5 × 3.5 in (5:7). Tip: drop an image anywhere on the slab.</p>
+      </section>
+
+      <section aria-labelledby="h-label">
+        <h2 id="h-label">Label</h2>
+        <div class="segmented" role="group" aria-label="Label source" id="label-mode">
+          <button type="button" data-mode="template" aria-pressed="true">Template</button>
+          <button type="button" data-mode="image" aria-pressed="false">Image</button>
+        </div>
+        <canvas class="preview" id="label-preview" width="2048" height="610" aria-label="Label preview"></canvas>
+
+        <form id="label-form" autocomplete="off">
+          <div class="row single"><label class="field">Year &amp; set<input type="text" name="line1"></label></div>
+          <div class="row single"><label class="field">Subject<input type="text" name="line2"></label></div>
+          <div class="row single"><label class="field">Extra line<input type="text" name="line3" placeholder="optional"></label></div>
+          <div class="row">
+            <label class="field">Card #<input type="text" name="cardNo"></label>
+            <label class="field">Grade text<input type="text" name="gradeText"></label>
+          </div>
+          <div class="row">
+            <label class="field">Grade<input type="text" name="grade"></label>
+            <label class="field">Cert #<input type="text" name="cert"></label>
+          </div>
+          <div class="row">
+            <label class="field">Logo text<input type="text" name="logo"></label>
+            <label class="field">Border<input type="color" name="accent"></label>
+          </div>
+        </form>
+
+        <div id="label-images" hidden>
+          <div class="row">
+            <label class="file"><input type="file" accept="image/*" data-target="labelFront"><b>Front</b><span>Choose image</span></label>
+            <label class="file"><input type="file" accept="image/*" data-target="labelBack"><b>Back</b><span>Choose image</span></label>
+          </div>
+          <p class="hint">Label images are 69.2 × 20.6 mm (about 3.36:1).</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-view">
+        <h2 id="h-view">View</h2>
+        <div class="segmented" role="group" aria-label="Camera">
+          <button type="button" data-orbit="0deg 90deg auto" aria-pressed="false">Front</button>
+          <button type="button" data-orbit="-24deg 84deg auto" aria-pressed="true">Angle</button>
+          <button type="button" data-orbit="180deg 90deg auto" aria-pressed="false">Back</button>
+        </div>
+        <label class="check"><input type="checkbox" id="spin"> Auto-rotate</label>
+      </section>
+
+      <section aria-labelledby="h-export">
+        <h2 id="h-export">Export</h2>
+        <div class="actions">
+          <button type="button" class="btn primary" id="download-glb">Download .glb</button>
+          <button type="button" class="btn" id="download-label">Label .png</button>
+        </div>
+        <button type="button" class="btn" id="reset" style="width:100%">Reset</button>
+      </section>
+    </div>
+  </aside>
+
+  <script type="module" src="viewer.js"></script>
+</body>
+</html>
