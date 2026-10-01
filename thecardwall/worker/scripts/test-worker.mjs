@@ -1,7 +1,8 @@
 // Offline checks for src/index.js: routing, art decoding, not-found and
 // error handling, with fetch, caches and the ASSETS binding stubbed.
 import assert from 'node:assert/strict';
-import worker, { decodeAbiString, cacheControlFor } from '../src/index.js';
+import worker from '../src/index.js';
+import { decodeAbiString, cacheControlFor } from '../src/lib.js';
 
 const abi = (text) => {
   const hex = Buffer.from(text, 'utf8').toString('hex');

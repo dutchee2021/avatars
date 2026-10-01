@@ -15,6 +15,7 @@ thecardwall/                  the static site (index.html, app.css, js/, assets/
 thecardwall/worker/
   wrangler.jsonc              Worker config: default (workers.dev), env.test, env.production
   src/index.js                the Worker: static assets + /thecardwall/api/art/{collection}/{id}
+  src/lib.js                  tokenURI reader, image decoding and cache policy used by index.js
   scripts/build.mjs           copies the site into worker/public/thecardwall/ (generated, git-ignored)
   scripts/test-worker.mjs     offline checks for the Worker (no network, no Cloudflare login)
 ```
@@ -148,7 +149,7 @@ Then check by hand (owner's phone and a desktop browser):
 | --- | --- | --- |
 | Dedicated RPC endpoint for the art endpoint | `npx wrangler secret put RPC_URL --env production` (and `--env test`) | `https://rpc.mainnet.chain.robinhood.com` |
 | Test hostname | `env.test.routes` in `wrangler.jsonc` | `thecardwall-test.moxapp.io` |
-| Edge cache for token art | `ART_EDGE_TTL` in `src/index.js` | 24 hours |
+| Edge cache for token art | `ART_EDGE_TTL` in `worker/src/lib.js` | 24 hours |
 
 Cached art can be cleared early with **Caching › Purge by URL** for
 `https://moxapp.io/thecardwall/api/art/<collection>/<id>`.
