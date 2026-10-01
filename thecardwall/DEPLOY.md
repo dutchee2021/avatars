@@ -13,7 +13,7 @@ existing `mox-pfp-feed` Worker that owns `moxapp.io/*`.
 ```
 thecardwall/                  the static site (index.html, app.css, js/, assets/, vendor/)
 thecardwall/worker/
-  wrangler.jsonc              Worker config: default (workers.dev), env.test, env.production
+  wrangler.jsonc              Worker config: default (thecardwall-preview on workers.dev), env.test, env.production
   src/index.js                the Worker: static assets + /thecardwall/api/art/{collection}/{id}
   src/lib.js                  tokenURI reader, image decoding and cache policy used by index.js
   scripts/build.mjs           copies the site into worker/public/thecardwall/ (generated, git-ignored)
@@ -69,7 +69,7 @@ Pick one:
 
 ```sh
 npm run deploy:test       # https://thecardwall-test.moxapp.io/thecardwall/
-npm run deploy:preview    # https://thecardwall.<account-subdomain>.workers.dev/thecardwall/
+npm run deploy:preview    # https://thecardwall-preview.<account-subdomain>.workers.dev/thecardwall/
 ```
 
 The test hostname is created by the custom-domain route in `env.test`

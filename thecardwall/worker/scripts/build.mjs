@@ -1,6 +1,6 @@
 // Copy the static site into public/thecardwall/ so Workers Static Assets
 // serve it under the same /thecardwall/ path it has on moxapp.io.
-import { cp, mkdir, rm, stat, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,7 +28,12 @@ let commit = 'unknown';
 try {
   commit = execSync('git rev-parse --short HEAD', { cwd: siteDir, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
 } catch {
-  // not a git checkout
+  // Not a git checkout (e.g. a release zip): use the commit stamped into it.
+  try {
+    commit = (await readFile(path.join(siteDir, 'RELEASE'), 'utf8')).trim() || commit;
+  } catch {
+    // no stamp either
+  }
 }
 const build = { built: new Date().toISOString(), commit };
 await writeFile(path.join(outDir, 'build.json'), `${JSON.stringify(build, null, 2)}\n`);
