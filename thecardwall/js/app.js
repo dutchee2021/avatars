@@ -644,7 +644,7 @@ async function boot() {
   setProgress(1);
   scene.start();
   hideProgress();
-  if (initial.ar && platform.kind !== 'desktop') {
+  if (initial.ar && platform.kind !== 'desktop' && !PREVIEW) {
     els.ar.classList.add('nudge');
     showToast('TAP AR TO PLACE YOUR SLAB', 4200);
   }
