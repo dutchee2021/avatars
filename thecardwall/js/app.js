@@ -166,15 +166,16 @@ function drawLabels() {
   scene.setMaterialImage('Label_Front', labelFront);
 }
 
+/** Art when the chain cannot be read: the bundled mascot, else a placeholder. */
 async function fallbackArt(collection, tokenId) {
   if (collection.id === 'stonkbrokers' && tokenId === DEFAULT_TOKEN_ID) {
     try {
-      return await artFromUrl('assets/demo/stonkbrokers-4354.png');
+      return { art: await artFromUrl('assets/demo/stonkbrokers-4354.png'), placeholder: false };
     } catch {
       // fall through to the neutral placeholder
     }
   }
-  return placeholderArt();
+  return { art: await placeholderArt(), placeholder: true };
 }
 
 function setLoading(on) {
@@ -198,7 +199,7 @@ async function selectToken(collection, tokenId, { quiet = false } = {}) {
   setLoading(true);
 
   let art;
-  let live = true;
+  let placeholder = false;
   try {
     art = await loadTokenArt(collection, tokenId);
   } catch (error) {
@@ -213,19 +214,18 @@ async function selectToken(collection, tokenId, { quiet = false } = {}) {
       if (!quiet) showToast(`${displayName(collection, tokenId)} IS NOT MINTED YET`);
       return 'not_found';
     }
-    console.warn('[cardwall] live art unavailable:', error.message);
-    art = await fallbackArt(collection, tokenId);
-    live = false;
+    if (!PREVIEW) console.warn('[cardwall] live art unavailable:', error.message);
+    ({ art, placeholder } = await fallbackArt(collection, tokenId));
   }
   if (seq !== state.seq) return 'stale';
   await composeCardFront(cardCanvas, art, tokenId);
   if (seq !== state.seq) return 'stale';
   scene.setMaterialImage('Card_Front', cardCanvas);
   setLoading(false);
-  if (!live && PREVIEW) {
+  if (placeholder && PREVIEW) {
     if (!selectToken.notedPreview) showToast('PREVIEW SHOWS PLACEHOLDER ART. LIVE ART LOADS ON THE SITE.', 4200);
     selectToken.notedPreview = true;
-  } else if (!live && !quiet) {
+  } else if (placeholder && !quiet) {
     showToast('LIVE ART IS UNAVAILABLE RIGHT NOW');
   }
   scheduleArPrewarm();
