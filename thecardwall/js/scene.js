@@ -348,13 +348,15 @@ export class SlabScene {
    * Look cannot show refraction).
    */
   buildArModel() {
+    // The card is seen through two faces of the case (outer and cavity), so
+    // the plastic stays nearly clear; its edges and reflections carry the look.
     const clear = new THREE.MeshStandardMaterial({
       name: 'Slab_Clear_AR', color: 0xffffff, roughness: 0.06, metalness: 0,
-      transparent: true, opacity: 0.2, depthWrite: false,
+      transparent: true, opacity: 0.03, depthWrite: false,
     });
     const edge = new THREE.MeshStandardMaterial({
       name: 'Slab_Edge_AR', color: 0xffffff, roughness: 0.28, metalness: 0,
-      transparent: true, opacity: 0.32, depthWrite: false,
+      transparent: true, opacity: 0.1, depthWrite: false,
     });
     const slab = this.slab.clone(true);
     // AR formats have no additive blending: the plastic gets a plain
@@ -372,12 +374,14 @@ export class SlabScene {
         gapFills.push(object);
         return;
       }
-      // AR has its own lighting: printed surfaces keep their full albedo.
+      // AR has its own (bright) lighting: printed surfaces keep their full
+      // albedo and a matte finish, so no sheen greys out the artwork.
       const printName = object.material?.name;
       if (PRINTED_MATERIALS.has(printName)) {
         if (!printed.has(printName)) {
           const material = object.material.clone();
           material.color.setScalar(1);
+          material.roughness = 0.9;
           printed.set(printName, material);
         }
         object.material = printed.get(printName);

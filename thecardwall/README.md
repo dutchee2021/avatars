@@ -22,10 +22,10 @@ see [DEPLOY.md](DEPLOY.md) for Cloudflare.
 - **Card back**: `assets/card-back.png`, the same for every card (placeholder
   until the final design arrives).
 - **Top bar**: the MOX logo, `THECARDWALL.COM` over `STONKBROKER #4354` /
-  `INTERN #ID`, the cart (OpenSea item page for the selected token) and
-  CLAW MACHINE (`https://thecardwall.com/alley`).
-- **Token bar**: download (1:1 MP4 loop), token ID field (default #4354, the
-  mascot), dice (random minted token), AR.
+  `INTERN #ID`, and CLAW MACHINE (`https://thecardwall.com/alley`).
+- **Token bar**: cart (OpenSea item page for the selected token), download
+  (1:1 MP4 loop), token ID field (default #4354, the mascot), dice (random
+  minted token), AR.
 - **Collection bar**: `STONKBROKERS` / `THE INTERNS`; the label and the chevron
   both open the compact menu.
 - **MP4**: 1080 x 1080, 30 fps, 180 frames = one full turn on black, so the clip

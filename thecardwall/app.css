@@ -150,8 +150,8 @@ button, input { font: inherit; }
 .collection-bar { bottom: calc(var(--bar-bottom) + var(--safe-b)); z-index: 9; }
 .token-bar { bottom: calc(var(--bar-bottom) + var(--bar-height) + var(--stack-gap) + var(--safe-b)); margin: 0; }
 
-.cw-bar button {
-  appearance: none; display: flex; align-items: center; justify-content: center;
+.cw-bar button, .cw-bar a.token-step-button {
+  appearance: none; display: flex; align-items: center; justify-content: center; text-decoration: none;
   height: 44px; margin: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -312,7 +312,7 @@ body.dialog-open { overflow: hidden; }
   background: #0b0c0e; color: var(--paper); font-size: 16px; line-height: 1;
 }
 .save-link input:focus { border-color: var(--paper); }
-.save-copy, .save-post, .save-download {
+.save-copy, .save-download {
   min-height: 44px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
   font: 700 10px/1 'Space Grotesk', system-ui, sans-serif; letter-spacing: .09em; text-decoration: none; cursor: pointer;
 }
@@ -321,12 +321,12 @@ body.dialog-open { overflow: hidden; }
 .save-status { min-height: 18px; margin: 10px 2px 0; color: var(--mox-dim); font-size: 10px; line-height: 1.5; }
 .save-status.state-error { color: #ff8f8f; }
 .save-status.state-done { color: var(--paper); }
-.save-actions { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.save-post, .save-download { padding: 0 14px; border: 1px solid var(--mox-line-strong); background: transparent; color: var(--paper); gap: 7px; white-space: nowrap; }
-.save-post:hover, .save-download:hover:not(:disabled) { border-color: var(--paper); }
+.save-actions { margin-top: 12px; display: grid; grid-template-columns: 1fr; gap: 8px; }
+.save-download { padding: 0 14px; border: 1px solid var(--mox-line-strong); background: transparent; color: var(--paper); gap: 7px; white-space: nowrap; }
+.save-download:hover:not(:disabled) { border-color: var(--paper); }
 .save-download.is-ready { border-color: var(--paper); background: var(--paper); color: var(--ink); }
 .save-download:disabled { border-color: var(--mox-line); color: var(--mox-dim); cursor: wait; }
-.save-copy svg, .save-post svg, .save-download svg { width: 17px; height: 17px; flex: 0 0 auto; }
+.save-copy svg, .save-download svg { width: 17px; height: 17px; flex: 0 0 auto; }
 .save-copy svg { width: 18px; height: 18px; }
 .save-privacy {
   min-height: 44px; margin: 6px auto -6px; padding: 0 10px; color: var(--mox-dim);
@@ -334,7 +334,7 @@ body.dialog-open { overflow: hidden; }
   font-size: 9px; font-weight: 650; letter-spacing: .12em; text-decoration: none;
 }
 .save-privacy:hover, .save-privacy:focus-visible { color: var(--paper); }
-.save-copy:focus-visible, .save-post:focus-visible, .save-download:focus-visible, .save-dismiss:focus-visible {
+.save-copy:focus-visible, .save-download:focus-visible, .save-dismiss:focus-visible {
   outline: 2px solid var(--paper); outline-offset: 3px;
 }
 .qr-frame {

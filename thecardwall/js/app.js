@@ -34,7 +34,6 @@ const els = {
   saveLink: $('saveLink'),
   saveCopy: $('saveCopy'),
   saveStatus: $('saveStatus'),
-  savePost: $('savePost'),
   saveDownload: $('saveDownload'),
   saveDownloadLabel: $('saveDownloadLabel'),
   qrDialog: $('qrDialog'),
@@ -271,7 +270,7 @@ els.tokenInput.addEventListener('blur', () => {
 });
 els.tokenInput.addEventListener('focus', () => els.tokenInput.select());
 // A tap on another control wins over committing a half-typed number.
-for (const control of [els.download, els.random, els.ar, els.collectionLabel, els.collectionChevron]) {
+for (const control of [els.cart, els.download, els.random, els.ar, els.collectionLabel, els.collectionChevron]) {
   control.addEventListener('pointerdown', () => {
     if (document.activeElement === els.tokenInput) {
       skipBlurCommit = true;
@@ -448,8 +447,6 @@ function prepareVideo() {
 function openSaveDialog() {
   els.saveTitle.textContent = currentName();
   els.saveLink.value = shareUrl();
-  const text = `${currentName()} on ${SITE_NAME}`;
-  els.savePost.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl())}`;
   setSaveStatus();
   showDialog(els.saveDialog);
   prepareVideo();

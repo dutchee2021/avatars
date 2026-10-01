@@ -17,7 +17,7 @@
   <main class="stage" id="stage" aria-label="3D slab viewer"></main>
   <div class="stage-glow" aria-hidden="true"></div>
 
-  <!-- Top navigation rail: literal MOX mark, two-line identity, cart and Claw Machine. -->
+  <!-- Top navigation rail: literal MOX mark, two-line identity and Claw Machine. -->
   <header class="plate">
     <div class="plate-left">
       <img class="mox-nav-logo" src="assets/m-nav-logo.png" alt="MOX" draggable="false">
@@ -29,19 +29,19 @@
       </div>
     </div>
     <div class="plate-right">
-      <a class="ar-btn icon-action buy-btn" id="cartBtn" target="_blank" rel="noopener noreferrer"
-         href="https://opensea.io/item/robinhood/0x539cdd042c2f3d93ebc5be7dfff0c79f3b4fabf0/4354"
-         title="Buy on OpenSea" aria-label="Buy STONKBROKER #4354 on OpenSea">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3.5 5h2l1.7 9.2h9.7l2-6.2H6.1"></path><circle cx="9" cy="18" r="1.25"></circle><circle cx="17" cy="18" r="1.25"></circle>
-        </svg>
-      </a>
       <a class="ar-btn otherside-btn" id="clawBtn" href="https://thecardwall.com/alley" target="_blank" rel="noopener">Claw Machine</a>
     </div>
   </header>
 
-  <!-- Bar 2: download loop, token id, random, AR. -->
+  <!-- Bar 2: buy on OpenSea, download loop, token id, random, AR. -->
   <form class="cw-bar token-bar" id="tokenBar" autocomplete="off" novalidate aria-label="Token">
+    <a class="token-step-button cart-btn" id="cartBtn" target="_blank" rel="noopener noreferrer"
+       href="https://opensea.io/item/robinhood/0x539cdd042c2f3d93ebc5be7dfff0c79f3b4fabf0/4354"
+       title="Buy on OpenSea" aria-label="Buy STONKBROKER #4354 on OpenSea">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3.5 5h2l1.7 9.2h9.7l2-6.2H6.1"></path><circle cx="9" cy="18" r="1.25"></circle><circle cx="17" cy="18" r="1.25"></circle>
+      </svg>
+    </a>
     <button class="token-step-button" id="downloadBtn" type="button" aria-label="Download MP4 loop" title="Download MP4 loop" aria-haspopup="dialog" aria-controls="saveDialog">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 18v2h14v-2"></path>
@@ -107,10 +107,6 @@
       </div>
       <p class="save-status" id="saveStatus" role="status" aria-live="polite" hidden></p>
       <div class="save-actions">
-        <a class="save-post" id="savePost" href="https://twitter.com/intent/tweet" target="_blank" rel="noreferrer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.59 13.51 6.83 3.98M15.41 6.51 8.59 10.49"></path></svg>
-          POST TO X
-        </a>
         <button class="save-download" id="saveDownload" type="button" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 18v2h14v-2"></path></svg>
           <span id="saveDownloadLabel">LOADING 0%</span>
