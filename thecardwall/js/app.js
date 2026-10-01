@@ -1,11 +1,11 @@
 import {
-  COLLECTIONS, DEFAULT_COLLECTION, DEFAULT_TOKEN_ID, LABEL, SITE_NAME,
+  COLLECTIONS, DEFAULT_COLLECTION, DEFAULT_TOKEN_ID, SITE_NAME,
   CANONICAL_URL, PREVIEW, openseaUrl, displayName,
 } from './config.js';
 import { SlabScene } from './scene.js';
 import { loadTokenArt, artFromUrl, placeholderArt } from './token-art.js';
 import { composeCardFront, loadCardBack, loadCardFonts, loadCardTemplate } from './card.js';
-import { drawLabelFront, drawLabelBack, LABEL_SIZE, LABEL_FONT } from './label.js';
+import { drawLabelFront, drawLabelBack, loadLabelArtwork, loadLabelFont, LABEL_SIZE } from './label.js';
 import { exportTurntable, EXPORT_SPEC } from './export-mp4.js';
 import {
   arPlatform, androidArSupported, prepareQuickLook, launchQuickLook, prepareAndroidAr, launchAndroidAr, drawQr,
@@ -54,12 +54,14 @@ const state = {
   collection: COLLECTIONS[DEFAULT_COLLECTION],
   tokenId: DEFAULT_TOKEN_ID,
   seq: 0,
+  cardShown: false, // a composed card is on the slab
   job: null, // MP4 preparation for the current selection
 };
 const cardCanvas = document.createElement('canvas');
 const labelFront = Object.assign(document.createElement('canvas'), LABEL_SIZE);
 const labelBack = Object.assign(document.createElement('canvas'), LABEL_SIZE);
 let scene;
+let labelArtwork; // approved label artwork, front and back
 
 const selectionKey = () => `${state.collection.id}-${state.tokenId}`;
 const currentName = () => displayName(state.collection, state.tokenId);
@@ -158,8 +160,7 @@ function renderIdentity() {
 }
 
 function drawLabels() {
-  drawLabelFront(labelFront, {
-    ...LABEL,
+  drawLabelFront(labelFront, labelArtwork, {
     line2: state.collection.labelName,
     cardNo: `#${state.tokenId}`,
   });
@@ -204,7 +205,7 @@ async function selectToken(collection, tokenId, { quiet = false } = {}) {
     art = await loadTokenArt(collection, tokenId);
   } catch (error) {
     if (seq !== state.seq) return 'stale';
-    if (error.code === 'not_found') {
+    if (error.code === 'not_found' && state.cardShown) {
       setLoading(false);
       state.collection = previous.collection;
       state.tokenId = previous.tokenId;
@@ -214,13 +215,21 @@ async function selectToken(collection, tokenId, { quiet = false } = {}) {
       if (!quiet) showToast(`${displayName(collection, tokenId)} IS NOT MINTED YET`);
       return 'not_found';
     }
-    if (!PREVIEW) console.warn('[cardwall] live art unavailable:', error.message);
-    ({ art, placeholder } = await fallbackArt(collection, tokenId));
+    if (error.code === 'not_found') {
+      // First card of the visit (e.g. a shared link to an unminted ID):
+      // keep the selection and show the placeholder rather than a blank card.
+      showToast(`${displayName(collection, tokenId)} IS NOT MINTED YET`);
+      art = await placeholderArt();
+    } else {
+      if (!PREVIEW) console.warn('[cardwall] live art unavailable:', error.message);
+      ({ art, placeholder } = await fallbackArt(collection, tokenId));
+    }
   }
   if (seq !== state.seq) return 'stale';
   await composeCardFront(cardCanvas, art, tokenId);
   if (seq !== state.seq) return 'stale';
   scene.setMaterialImage('Card_Front', cardCanvas);
+  state.cardShown = true;
   setLoading(false);
   if (placeholder && PREVIEW) {
     if (!selectToken.notedPreview) showToast('PREVIEW SHOWS PLACEHOLDER ART. LIVE ART LOADS ON THE SITE.', 4200);
@@ -622,19 +631,20 @@ async function boot() {
 
   const fonts = Promise.allSettled([
     loadCardFonts(),
-    document.fonts.load(`400 40px ${LABEL_FONT}`, 'A#0'),
-    document.fonts.load(`700 40px ${LABEL_FONT}`, 'A#0'),
+    loadLabelFont(),
     document.fonts.load('600 17px "Space Grotesk"'),
   ]);
-  const [back] = await Promise.all([
+  const [back, artwork] = await Promise.all([
     loadCardBack(),
+    loadLabelArtwork(),
     scene.load('assets/slab.glb').then(() => setProgress(0.55, 'LOADING SLAB')),
-    loadCardTemplate(),
+    loadCardTemplate(state.tokenId),
     fonts,
   ]);
+  labelArtwork = artwork;
   layout();
   scene.setMaterialImage('Card_Back', back);
-  drawLabelBack(labelBack, LABEL);
+  drawLabelBack(labelBack, labelArtwork);
   scene.setMaterialImage('Label_Back', labelBack);
   setProgress(0.75, 'LOADING CARD');
 

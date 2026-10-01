@@ -38,17 +38,6 @@ export const ART_ENDPOINT = HOST.artEndpoint ?? './api/art/';
 export const RPC_URLS = Object.freeze(HOST.rpcUrls ?? ['https://rpc.mainnet.chain.robinhood.com']);
 export const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
 
-// Fixed label copy (see the approved STONKSLAB sample).
-export const LABEL = Object.freeze({
-  line1: '2026 CLUTCH MARKETS',
-  line3: 'ROBINHOOD',
-  gradeText: 'MINTED',
-  grade: '10',
-  cert: 'ERC-6551',
-  logo: 'THECARDWALL',
-  accent: '#d71f2b',
-});
-
 export const SITE_NAME = 'THECARDWALL.COM';
 export const CLAW_MACHINE_URL = 'https://thecardwall.com/alley';
 export const PRIVACY_URL = 'https://moxapp.io/privacy';

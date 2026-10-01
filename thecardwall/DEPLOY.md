@@ -164,8 +164,9 @@ within 5 minutes.
 | --- | --- | --- |
 | Final card back (same for every card) | `thecardwall/assets/card-back.png` | 1000 x 1400 px PNG (any 5:7 image works). |
 | Card front frame | `thecardwall/assets/card-template-front.png` | 750 x 1050 px PNG, transparent art window. Art is placed by `js/card.js` (bottom-aligned to the frame's black outline). |
-| Licensed Franklin Gothic Heavy for the ribbon number | add `thecardwall/assets/fonts/franklin-gothic-heavy.woff2` and the `@font-face` below to `app.css` | The card compositor switches to it automatically at the specified 16 pt (66.7 px at 300 dpi). Until then it uses Libre Franklin Black (OFL), fitted to the sample. |
-| Label text | `LABEL` and `COLLECTIONS[*].labelName` in `js/config.js` | `#4354` and the collection line update per token automatically. |
+| Licensed Franklin Gothic Heavy for the ribbon number | add `thecardwall/assets/fonts/franklin-gothic-heavy.woff2` and the `@font-face` below to `app.css` | The card compositor switches to it automatically at the specified 16 pt (66.7 px at 300 dpi). Until then it uses Libre Franklin Black (OFL), fitted to the sample; #4354 always uses the supplied template with the number printed. |
+| Label artwork | `thecardwall/assets/label-front.jpg`, `label-back.jpg` | 2048 x 610 px. If the front's text changes, update `ARTWORK` and `FIELDS` in `js/label.js` (the fields that are redrawn per token). |
+| Collection line on the label | `COLLECTIONS[*].labelName` in `js/config.js` | `#ID` and the collection line update per token automatically. |
 | Token ID ranges | `minId` / `maxId` in `js/config.js` | Used by the input check and the dice. |
 | Slab model | `thecardwall/assets/slab.glb` | Export from `slab/build_slab.py`; keep the material names (`Card_Front`, `Card_Back`, `Label_Front`, `Label_Back`, ...). |
 

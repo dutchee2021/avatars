@@ -1,26 +1,43 @@
-// Slab label artwork drawn on a <canvas>: the approved Card Slab Viewer
-// template (69.2 x 20.6 mm, 2048 x 610 px) with The Card Wall copy.
-// Arimo is bundled (metric-compatible with Arial) so every device draws the
-// same label instead of whatever Helvetica/Arial substitute it has.
+// Slab label: the approved label artwork from the STONKSLAB sample
+// (assets/label-front.jpg and assets/label-back.jpg, byte-for-byte), drawn
+// by the Card Slab Viewer label template. Only the two fields that change per
+// token are redrawn, with that template's own paper, font, size and layout:
+// the collection line ($STONKBROKER / $STONKBROKER INTERNS) and the #ID.
 
 export const LABEL_SIZE = Object.freeze({ width: 2048, height: 610 });
-export const LABEL_FONT = '"CardWall Label", "Helvetica Neue", Helvetica, Arial, sans-serif';
 
-// Layout as fractions of the label (measured from a real grading label).
+// The template's font stack is "Helvetica Neue", Helvetica, Arial. iPhone,
+// iPad and Mac have Helvetica Neue, so redrawn fields match the artwork
+// exactly there; elsewhere a bundled Helvetica clone (FreeSans) stands in.
+export const LABEL_FONT = '"Helvetica Neue", "CardWall Helvetica", Helvetica, Arial, sans-serif';
+const TEXT_COLOR = '#121212';
+
+// What the approved artwork already says; matching fields are left untouched.
+const ARTWORK = Object.freeze({ line2: '$STONKBROKER', cardNo: '#4354' });
+
+// Label template layout (fractions of the label), as in ../slab/label.js.
 const L = {
   borderTop: 0.072, borderBottom: 0.095, borderSide: 0.021,
   textLeft: 0.056, textRight: 0.958,
   rows: [0.282, 0.458, 0.634, 0.81],
   fontSize: 0.152,
-  leftMaxWidth: 0.68, // room for "$STONKBROKER INTERNS" at full size
-  rightMaxWidth: 0.3,
 };
+
+// Per field: template row and alignment, the template's auto-fit width, and
+// the area cleared back to bare paper (px on the 2048 x 610 label), which
+// covers the artwork's original text with a margin and nothing else.
+const FIELDS = Object.freeze({
+  line2: { row: 1, align: 'left', maxWidth: 0.56, clear: { x: 96, y: 184, w: 800, h: 116 } },
+  cardNo: { row: 0, align: 'right', maxWidth: 0.3, clear: { x: 1560, y: 64, w: 430, h: 128 } },
+});
 
 function innerRect(w, h) {
   const x = w * L.borderSide, y = h * L.borderTop;
   return { x, y, w: w - 2 * x, h: h - y - h * L.borderBottom };
 }
 
+// The template's paper: soft gradient plus faint guilloche lines (same code
+// and seed as the template, so a cleared field blends into the artwork).
 function hologram(ctx, r, seed = 0) {
   const g = ctx.createLinearGradient(r.x, r.y, r.x + r.w, r.y + r.h);
   g.addColorStop(0, '#f7fafc');
@@ -28,7 +45,6 @@ function hologram(ctx, r, seed = 0) {
   g.addColorStop(1, '#f5f8fa');
   ctx.fillStyle = g;
   ctx.fillRect(r.x, r.y, r.w, r.h);
-  // faint guilloche lines, like security print
   ctx.save();
   ctx.beginPath();
   ctx.rect(r.x, r.y, r.w, r.h);
@@ -47,90 +63,74 @@ function hologram(ctx, r, seed = 0) {
   ctx.restore();
 }
 
-// Decorative barcode derived from the cert text (not a scannable symbology).
-function barcode(ctx, x, y, w, h, text) {
-  const bits = [];
-  for (const ch of String(text || '0')) {
-    const c = ch.charCodeAt(0);
-    for (let k = 0; k < 6; k++) bits.push(1 + ((c >> k) & 1) + ((c * (k + 3)) % 3 === 0 ? 1 : 0));
-  }
-  const total = bits.reduce((a, b) => a + b, 0);
-  const unit = w / total;
-  ctx.fillStyle = '#111';
-  let cx = x;
-  bits.forEach((b, i) => {
-    if (i % 2 === 0) ctx.fillRect(cx, y, b * unit * 0.9, h);
-    cx += b * unit;
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Could not load ${url}`));
+    img.src = url;
   });
 }
 
-function logoBadge(ctx, cx, top, h, text) {
-  const size = h * 0.36;
-  ctx.font = `700 ${size}px ${LABEL_FONT}`;
-  const tw = ctx.measureText(text).width;
-  const w = Math.max(h * 1.2, tw + h * 0.45);
-  const x = cx - w / 2;
-  const g = ctx.createLinearGradient(x, top, x + w, top + h);
-  g.addColorStop(0, '#9aa3ab');
-  g.addColorStop(0.35, '#e9edf0');
-  g.addColorStop(0.6, '#b9c1c8');
-  g.addColorStop(1, '#dfe4e8');
-  ctx.fillStyle = g;
-  ctx.fillRect(x, top, w, h);
-  ctx.fillStyle = '#1d3f8f';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, cx, top + h * 0.5);
+let artworkPromise;
+/** The approved label artwork, front and back. */
+export function loadLabelArtwork() {
+  artworkPromise ??= Promise.all([loadImage('assets/label-front.jpg'), loadImage('assets/label-back.jpg')])
+    .then(([front, back]) => ({ front, back }));
+  return artworkPromise;
 }
 
-/** Front: set / collection / chain on the left, token, grade and cert on the right. */
-export function drawLabelFront(canvas, o) {
-  const w = canvas.width, h = canvas.height;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = o.accent;
-  ctx.fillRect(0, 0, w, h);
+/** Make sure the label font (or its stand-in) is ready before drawing. */
+export function loadLabelFont() {
+  return document.fonts.load(`400 ${LABEL_SIZE.height * L.fontSize}px ${LABEL_FONT}`, '$#0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+}
+
+function redrawField(ctx, field, text) {
+  const { width: w, height: h } = LABEL_SIZE;
+  const { clear } = field;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(clear.x, clear.y, clear.w, clear.h);
+  ctx.clip();
   hologram(ctx, innerRect(w, h));
+  ctx.restore();
 
-  ctx.fillStyle = '#121212';
-  ctx.textBaseline = 'alphabetic';
-  const fit = (s, maxW) => {
-    let size = h * L.fontSize;
+  // The template's auto-fit: shrink in 2 px steps until the text fits.
+  let size = h * L.fontSize;
+  ctx.font = `400 ${size}px ${LABEL_FONT}`;
+  while (size > h * 0.06 && ctx.measureText(text).width > w * field.maxWidth) {
+    size -= 2;
     ctx.font = `400 ${size}px ${LABEL_FONT}`;
-    while (size > h * 0.06 && ctx.measureText(s).width > maxW) {
-      size -= 2;
-      ctx.font = `400 ${size}px ${LABEL_FONT}`;
-    }
-  };
-  ctx.textAlign = 'left';
-  [o.line1, o.line2, o.line3].filter(Boolean).forEach((s, i) => {
-    fit(s.toUpperCase(), w * L.leftMaxWidth);
-    ctx.fillText(s.toUpperCase(), w * L.textLeft, h * L.rows[i]);
-  });
-  ctx.textAlign = 'right';
-  [o.cardNo, o.gradeText, o.grade, o.cert].forEach((s, i) => {
-    if (!s) return;
-    fit(String(s).toUpperCase(), w * L.rightMaxWidth);
-    ctx.fillText(String(s).toUpperCase(), w * L.textRight, h * L.rows[i]);
-  });
+  }
+  ctx.fillStyle = TEXT_COLOR;
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = field.align;
+  ctx.fillText(text, w * (field.align === 'left' ? L.textLeft : L.textRight), h * L.rows[field.row]);
+}
 
-  barcode(ctx, w * 0.052, h * 0.668, w * 0.255, h * 0.15, o.cert);
-  if (o.logo) logoBadge(ctx, w * 0.5, h * 0.705, h * 0.295, o.logo.toUpperCase());
+/**
+ * Front of the label for one token.
+ * @param {HTMLCanvasElement} canvas
+ * @param {{front: HTMLImageElement}} artwork from loadLabelArtwork()
+ * @param {{line2: string, cardNo: string}} fields
+ */
+export function drawLabelFront(canvas, artwork, fields) {
+  canvas.width = LABEL_SIZE.width;
+  canvas.height = LABEL_SIZE.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(artwork.front, 0, 0, canvas.width, canvas.height);
+  for (const [name, field] of Object.entries(FIELDS)) {
+    const text = String(fields[name] ?? '').toUpperCase();
+    if (text !== ARTWORK[name]) redrawField(ctx, field, text);
+  }
   return canvas;
 }
 
-/** Back: hologram panel with the logo badge, barcode and cert line. */
-export function drawLabelBack(canvas, o) {
-  const w = canvas.width, h = canvas.height;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = o.accent;
-  ctx.fillRect(0, 0, w, h);
-  hologram(ctx, innerRect(w, h), 2);
-  if (o.logo) logoBadge(ctx, w * 0.2, h * 0.24, h * 0.42, o.logo.toUpperCase());
-  barcode(ctx, w * 0.42, h * 0.26, w * 0.4, h * 0.3, o.cert);
-  ctx.fillStyle = '#121212';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'alphabetic';
-  ctx.font = `400 ${h * 0.13}px ${LABEL_FONT}`;
-  ctx.fillText(`CERT ${o.cert || ''}`.trim(), w * 0.62, h * 0.76);
+/** Back of the label: the approved artwork, unchanged for every token. */
+export function drawLabelBack(canvas, artwork) {
+  canvas.width = LABEL_SIZE.width;
+  canvas.height = LABEL_SIZE.height;
+  canvas.getContext('2d').drawImage(artwork.back, 0, 0, canvas.width, canvas.height);
   return canvas;
 }

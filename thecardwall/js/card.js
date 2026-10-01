@@ -1,17 +1,21 @@
 // Card front compositor: token art + STONKCARDS frame template + the rotated
 // token number on the top-left ribbon. All geometry is in the template's
 // native pixels (750 x 1050 = 2.5 x 3.5 in at 300 dpi), measured from the
-// supplied PNGs and the approved STONKSLAB sample.
+// supplied PNGs and the approved STONKSLAB sample. The texture is drawn at
+// 8/3 of that size so pixel art and the number stay sharp up close.
 
-export const CARD_TEXTURE = Object.freeze({ width: 1000, height: 1400 });
+export const CARD_TEXTURE = Object.freeze({ width: 2000, height: 2800 });
 const TEMPLATE = Object.freeze({ width: 750, height: 1050 });
+// The supplied template that already carries "#4354" (the mascot) is used
+// as-is for that number, so the default card is exactly the approved file.
+const TEMPLATE_NUMBER = 4354;
 const SCALE = CARD_TEXTURE.width / TEMPLATE.width;
 
 // Transparent art window inside the black frame line (alpha mask bounds).
 const WINDOW = Object.freeze({ x: 37, y: 32, width: 673, height: 883 });
 // Art placement: centred on the card, bottom edge on the outer edge of the
-// frame's black outline, scaled to the approved sample (24 art pixels of
-// 37.8 px for the 24x24 broker art).
+// frame's black outline, scaled to the approved sample (square art, 907.2 px
+// tall; the sides fall under the frame).
 const ART = Object.freeze({ centerX: 375, bottom: 920.25, height: 907.2 });
 
 // Token number: Franklin Gothic Heavy 16 pt (66.7 px @ 300 dpi), #ff6f00,
@@ -25,7 +29,7 @@ const NUMBER_FACES = Object.freeze([
 ]);
 const NUMBER_COLOR = '#ff6f00';
 
-let templatePromise;
+const templatePromises = new Map();
 let backPromise;
 
 function loadImage(url) {
@@ -38,9 +42,11 @@ function loadImage(url) {
   });
 }
 
-export function loadCardTemplate(url = 'assets/card-template-front.png') {
-  templatePromise ??= loadImage(url);
-  return templatePromise;
+/** The frame template; the "#4354" version for the mascot's number. */
+export function loadCardTemplate(tokenId) {
+  const url = Number(tokenId) === TEMPLATE_NUMBER ? 'assets/card-template-front-4354.png' : 'assets/card-template-front.png';
+  if (!templatePromises.has(url)) templatePromises.set(url, loadImage(url));
+  return templatePromises.get(url);
 }
 
 export function loadCardBack(url = 'assets/card-back.png') {
@@ -106,7 +112,7 @@ function drawTokenNumber(ctx, text) {
  * @param {number|string} tokenId
  */
 export async function composeCardFront(canvas, art, tokenId) {
-  const template = await loadCardTemplate();
+  const template = await loadCardTemplate(tokenId);
   canvas.width = CARD_TEXTURE.width;
   canvas.height = CARD_TEXTURE.height;
   const ctx = canvas.getContext('2d');
@@ -126,7 +132,7 @@ export async function composeCardFront(canvas, art, tokenId) {
 
   // Frame, ribbon and nameplate sit on top of the art.
   ctx.drawImage(template, 0, 0, TEMPLATE.width, TEMPLATE.height);
-  drawTokenNumber(ctx, `#${tokenId}`);
+  if (Number(tokenId) !== TEMPLATE_NUMBER) drawTokenNumber(ctx, `#${tokenId}`);
   ctx.restore();
   return canvas;
 }

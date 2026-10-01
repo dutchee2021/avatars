@@ -166,8 +166,9 @@ export function prepareSvg(svgText) {
     svg.setAttribute('viewBox', `0 0 ${attrW} ${attrH}`);
   }
   if (!vbw) [vbw, vbh] = [1000, 1000];
-  // Render size: large enough that the browser rasterises sharply.
-  const scale = Math.max(1, 1024 / Math.max(vbw, vbh));
+  // Render size: at least the size the card draws it (2419 px tall on the
+  // 2000 x 2800 card texture), so vector art stays sharp.
+  const scale = Math.max(1, 2400 / Math.max(vbw, vbh));
   svg.setAttribute('width', String(Math.round(vbw * scale)));
   svg.setAttribute('height', String(Math.round(vbh * scale)));
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');

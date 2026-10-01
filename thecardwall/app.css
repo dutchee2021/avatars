@@ -18,20 +18,14 @@
   font-display: block;
   src: url('assets/fonts/libre-franklin-latin-900-normal.woff2') format('woff2');
 }
-/* Slab label (metric-compatible with Arial, so every device draws the same label). */
+/* Slab label stand-in for systems without Helvetica Neue (the label
+   template's font): GNU FreeSans, a Helvetica clone. */
 @font-face {
-  font-family: 'CardWall Label';
+  font-family: 'CardWall Helvetica';
   font-style: normal;
   font-weight: 400;
   font-display: block;
-  src: url('assets/fonts/arimo-latin-400-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'CardWall Label';
-  font-style: normal;
-  font-weight: 700;
-  font-display: block;
-  src: url('assets/fonts/arimo-latin-700-normal.woff2') format('woff2');
+  src: url('assets/fonts/freesans-latin-400-normal.woff2') format('woff2');
 }
 
 :root {
