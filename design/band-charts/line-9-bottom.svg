@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="506.18" height="58.5" viewBox="0 0 506.18 58.5">
+  <title>Bullish line chart, 9 points, bottom band (seed 1)</title>
+  <g id="chart" fill="#FF6F00">
+    <path id="line" d="M401.65 17.48 L365.08 21.04 L328.53 26.59 L291.64 32.43 L254.4 35.23 L217.44 33.08 L181.17 31.99 L145.16 36.13 L108.79 45.35 L106.33 35.65 L143.36 26.28 L180.75 21.98 L217.88 23.09 L254.32 25.21 L290.48 22.49 L326.99 16.71 L363.84 11.12 L400.67 7.52 Z"/>
+  </g>
+</svg>

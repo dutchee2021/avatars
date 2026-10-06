@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="506.18" height="58.5" viewBox="0 0 506.18 58.5">
+  <title>Bullish line chart, 5 points, bottom band (seed 1)</title>
+  <g id="chart" fill="#FF6F00">
+    <path id="line" d="M401.78 17.46 L328.36 26.61 L254.54 35.23 L181.31 32.01 L108.47 45.42 L106.65 35.58 L180.61 21.97 L254.18 25.21 L327.16 16.68 L400.54 7.54 Z"/>
+  </g>
+  <g id="guide" fill="none" stroke="#00A3FF" stroke-width="0.75">
+    <path id="band-inside" d="M43 2.5 L463.18 2.5 L506.18 58.5 L0 58.5 Z"/>
+    <path id="handle-tab" d="M233.84 2.5 V3.32 A4 4 0 0 0 237.84 7.32 H270.88 A4 4 0 0 0 274.88 3.32 V2.5"/>
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="506.18" height="58.5" viewBox="0 0 506.18 58.5">
+  <title>Bullish bar chart, 9 points, bottom band (seed 1)</title>
+  <g id="chart" fill="#FF6F00">
+    <path id="bar-01" d="M112.56 0 L112.56 45.5 L102.56 45.5 L102.56 0 Z"/>
+    <path id="bar-02" d="M149.26 0 L149.26 36.21 L139.26 36.21 L139.26 0 Z"/>
+    <path id="bar-03" d="M185.96 0 L185.96 31.99 L175.96 31.99 L175.96 0 Z"/>
+    <path id="bar-04" d="M222.66 0 L222.66 33.08 L212.66 33.08 L212.66 0 Z"/>
+    <path id="bar-05" d="M259.36 2.5 L259.36 35.22 L249.36 35.22 L249.36 2.5 Z"/>
+    <path id="bar-06" d="M296.06 0 L296.06 32.46 L286.06 32.46 L286.06 0 Z"/>
+    <path id="bar-07" d="M332.76 0 L332.76 26.65 L322.76 26.65 L322.76 0 Z"/>
+    <path id="bar-08" d="M369.46 0 L369.46 21.08 L359.46 21.08 L359.46 0 Z"/>
+    <path id="bar-09" d="M406.16 0 L406.16 17.5 L396.16 17.5 L396.16 0 Z"/>
+  </g>
+  <g id="guide" fill="none" stroke="#00A3FF" stroke-width="0.75">
+    <path id="band-inside" d="M43 2.5 L463.18 2.5 L506.18 58.5 L0 58.5 Z"/>
+    <path id="handle-tab" d="M233.84 2.5 V3.32 A4 4 0 0 0 237.84 7.32 H270.88 A4 4 0 0 0 274.88 3.32 V2.5"/>
+  </g>
+</svg>

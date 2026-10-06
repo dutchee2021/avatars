@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="489.69" height="58.5" viewBox="0 0 489.69 58.5">
+  <title>Bullish bar chart, 5 points, top band (seed 1)</title>
+  <g id="chart" fill="#FF6F00">
+    <path id="bar-01" d="M93.28 58.5 L93.28 41 L103.28 41 L103.28 58.5 Z"/>
+    <path id="bar-02" d="M166.68 58.5 L166.68 31.85 L176.68 31.85 L176.68 58.5 Z"/>
+    <path id="bar-03" d="M240.08 56 L240.08 23.28 L250.08 23.28 L250.08 56 Z"/>
+    <path id="bar-04" d="M313.48 58.5 L313.48 26.51 L323.48 26.51 L323.48 58.5 Z"/>
+    <path id="bar-05" d="M386.88 58.5 L386.88 13 L396.88 13 L396.88 58.5 Z"/>
+  </g>
+</svg>
