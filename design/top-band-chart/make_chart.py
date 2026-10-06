@@ -13,10 +13,13 @@ Every number is in card-image px, the scale where the card's outline stroke is
 left corner is the top left inside corner of the band, and its width is the
 band's inside top width, so scaling the file to that width makes every bar
 exactly as thick as the corner wick. The bars stand on the band's bottom line
-and run 2.5 px into it so no seam shows; the middle three sit on the handle tab.
+and run 2.5 px into it so no seam shows; the middle one sits on the handle tab.
 
-The heights are a random price walk filtered to read as an uptrend: the low at
-the start, every pullback holding above the last one, the close at the high.
+Five bars, spaced and sized like the five pennant flags across the top band of
+the vintage baseball card back this design follows: poles 18.2% of the band's
+bottom width apart, centred, the tallest reaching the flags' height (77% of the
+band). The heights are a random walk filtered to read as growth: lowest first,
+highest last, and one shallow pullback in between that holds above the low.
 
     python3 make_chart.py              # the committed chart
     python3 make_chart.py --seed 7     # a different random chart
@@ -38,67 +41,52 @@ HOLE = (229.08, 261.08)  # the handle's cream opening below the bottom line
 
 # ------------------------------------------------- the bars
 BAR = 10.0             # = the stick of the corner candles' wicks
-GAP = 5.0              # = the card's outline stroke; 3 bars + 2 gaps span the tab
-BARS = 25              # odd, so the middle three bars sit on the handle tab
-CLEAR = 6.0            # gap kept from the top bar and the slanted sides
-MIN_BAR = 10.0         # shortest bar
+BARS = 5               # odd, so the middle bar sits on the handle tab
+PITCH = 73.4           # centre to centre, = the flags' spacing scaled to this band
+MAX_BAR = 43.0         # = the flags' height
+MIN_BAR = 15.0         # shortest bar
+CLEAR = 6.0            # gap kept from the slanted sides
 SINK = 2.5             # how far bars run into the bottom line (5 px thick)
 
-DEFAULT_SEED = 5
+DEFAULT_SEED = 1
 
 
 def walk(rng, n):
-    """Random prices with an upward drift: base, climb, pullback, breakout."""
+    """Random prices with an upward drift."""
     p, path = 0.0, [0.0]
-    for i in range(1, n):
-        t = i / (n - 1)
-        if t < 0.2:
-            drift = 0.15
-        elif t < 0.55:
-            drift = 0.6
-        elif t < 0.75:
-            drift = -0.25
-        else:
-            drift = 0.85
-        p += drift + rng.gauss(0, 0.75)
+    for _ in range(1, n):
+        p += 1.0 + rng.gauss(0, 0.9)
         path.append(p)
     return path
 
 
 def bullish(path):
-    """True if the walk reads as a clean uptrend."""
-    n = len(path)
-    if path[-1] != max(path) or min(path[:3]) != min(path):
-        return False                          # starts at the low, ends at the high
-    steps = list(zip(path, path[1:]))
-    if not 0.25 <= sum(b < a for a, b in steps) / (n - 1) <= 0.42:
-        return False                          # some red, mostly green
-    run = 0
-    for a, b in steps:
-        run = run + 1 if b < a else 0
-        if run > 3:
-            return False                      # no long sell-offs
-    swing = None
-    for i in range(1, n - 1):                 # higher lows
-        if path[i] <= path[i - 1] and path[i] <= path[i + 1]:
-            if swing is not None and path[i] <= swing:
-                return False
-            swing = path[i]
-    return True
+    """True if the walk reads as growth with one shallow pullback."""
+    lo, hi = min(path), max(path)
+    if path[0] != lo or path[-1] != hi:
+        return False                          # lowest first, highest last
+    steps = [b - a for a, b in zip(path, path[1:])]
+    downs = [i for i, d in enumerate(steps) if d < 0]
+    if len(downs) != 1 or downs[0] in (0, len(steps) - 1):
+        return False                          # one pullback, not at either end
+    i = downs[0]
+    if -steps[i] > 0.6 * steps[i - 1] or -steps[i] < 0.1 * (hi - lo):
+        return False                          # visible, but gives back under 60% of the rise before it
+    return all(d > 0.15 * (hi - lo) for d in steps if d > 0)  # every rise is a clear step up
 
 
 def layout(path):
     """(x, top, bottom) per bar, centred on the handle tab, standing on the bottom line."""
     n = len(path)
     lo, hi = min(path), max(path)
-    x0 = (TAB[0] + TAB[1]) / 2 - (n * BAR + (n - 1) * GAP) / 2
+    centre = (TAB[0] + TAB[1]) / 2
     inset = CLEAR / math.cos(math.atan(SLOPE))  # perpendicular gap -> horizontal
-    if x0 < SLOPE * BAND_H + inset:
+    if centre - (n - 1) / 2 * PITCH - BAR / 2 < SLOPE * BAND_H + inset:
         raise SystemExit('%d bars do not fit between the slanted sides' % n)
     bars = []
     for i, v in enumerate(path):
-        x = x0 + i * (BAR + GAP)
-        top = BAND_H - (MIN_BAR + (v - lo) / (hi - lo) * (BAND_H - CLEAR - MIN_BAR))
+        x = centre + (i - (n - 1) / 2) * PITCH - BAR / 2
+        top = BAND_H - (MIN_BAR + (v - lo) / (hi - lo) * (MAX_BAR - MIN_BAR))
         # over the handle's opening the tab already joins bar and line, so don't sink into the hole
         bottom = BAND_H if x < HOLE[1] and x + BAR > HOLE[0] else BAND_H + SINK
         bars.append((x, top, bottom))
@@ -158,7 +146,7 @@ def main():
     for name, guide in (('bullish-chart.svg', False), ('bullish-chart-guide.svg', True)):
         with open(os.path.join(args.out, name), 'w') as fh:
             fh.write(svg(bars, args.seed, guide))
-    print('seed %d: %d bars, %g wide, %g apart' % (args.seed, len(bars), BAR, GAP))
+    print('seed %d: heights %s' % (args.seed, ', '.join(f(BAND_H - top) for _, top, _ in bars)))
 
 
 if __name__ == '__main__':

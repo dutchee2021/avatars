@@ -1,32 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="489.69" height="58.5" viewBox="0 0 489.69 58.5">
-  <title>Bullish bar chart, top band (seed 5)</title>
+  <title>Bullish bar chart, top band (seed 1)</title>
   <g id="bars" fill="#FF6F00">
-    <path id="bar-01" d="M60.08 58.5 V46 H70.08 V58.5 Z"/>
-    <path id="bar-02" d="M75.08 58.5 V40.37 H85.08 V58.5 Z"/>
-    <path id="bar-03" d="M90.08 58.5 V42.33 H100.08 V58.5 Z"/>
-    <path id="bar-04" d="M105.08 58.5 V43.1 H115.08 V58.5 Z"/>
-    <path id="bar-05" d="M120.08 58.5 V40.77 H130.08 V58.5 Z"/>
-    <path id="bar-06" d="M135.08 58.5 V42.94 H145.08 V58.5 Z"/>
-    <path id="bar-07" d="M150.08 58.5 V41.67 H160.08 V58.5 Z"/>
-    <path id="bar-08" d="M165.08 58.5 V36.67 H175.08 V58.5 Z"/>
-    <path id="bar-09" d="M180.08 58.5 V32.28 H190.08 V58.5 Z"/>
-    <path id="bar-10" d="M195.08 58.5 V28.98 H205.08 V58.5 Z"/>
-    <path id="bar-11" d="M210.08 58.5 V31.6 H220.08 V58.5 Z"/>
-    <path id="bar-12" d="M225.08 56 V24.08 H235.08 V56 Z"/>
-    <path id="bar-13" d="M240.08 56 V20.85 H250.08 V56 Z"/>
-    <path id="bar-14" d="M255.08 56 V17.11 H265.08 V56 Z"/>
-    <path id="bar-15" d="M270.08 58.5 V16.73 H280.08 V58.5 Z"/>
-    <path id="bar-16" d="M285.08 58.5 V21.62 H295.08 V58.5 Z"/>
-    <path id="bar-17" d="M300.08 58.5 V25.84 H310.08 V58.5 Z"/>
-    <path id="bar-18" d="M315.08 58.5 V29.54 H325.08 V58.5 Z"/>
-    <path id="bar-19" d="M330.08 58.5 V22.26 H340.08 V58.5 Z"/>
-    <path id="bar-20" d="M345.08 58.5 V21.53 H355.08 V58.5 Z"/>
-    <path id="bar-21" d="M360.08 58.5 V19.41 H370.08 V58.5 Z"/>
-    <path id="bar-22" d="M375.08 58.5 V17.31 H385.08 V58.5 Z"/>
-    <path id="bar-23" d="M390.08 58.5 V13.24 H400.08 V58.5 Z"/>
-    <path id="bar-24" d="M405.08 58.5 V9.34 H415.08 V58.5 Z"/>
-    <path id="bar-25" d="M420.08 58.5 V6 H430.08 V58.5 Z"/>
+    <path id="bar-01" d="M93.28 58.5 V41 H103.28 V58.5 Z"/>
+    <path id="bar-02" d="M166.68 58.5 V31.85 H176.68 V58.5 Z"/>
+    <path id="bar-03" d="M240.08 56 V23.28 H250.08 V56 Z"/>
+    <path id="bar-04" d="M313.48 58.5 V26.51 H323.48 V58.5 Z"/>
+    <path id="bar-05" d="M386.88 58.5 V13 H396.88 V58.5 Z"/>
   </g>
   <g id="guide" fill="none" stroke="#00A3FF" stroke-width="0.75">
     <path id="band-inside" d="M0 0 H489.69 L446.69 56 H43 Z"/>
