@@ -40,7 +40,6 @@ HOLE = (229.08, 261.08)  # the handle's cream opening below the bottom line
 BAR = 10.0             # = the stick of the corner candles' wicks
 GAP = 5.0              # = the card's outline stroke; 3 bars + 2 gaps span the tab
 BARS = 25              # odd, so the middle three bars sit on the handle tab
-CORNER = 2.5           # rounding on the top corners
 CLEAR = 6.0            # gap kept from the top bar and the slanted sides
 MIN_BAR = 10.0         # shortest bar
 SINK = 2.5             # how far bars run into the bottom line (5 px thick)
@@ -112,10 +111,7 @@ def f(v):
 
 
 def bar_path(x, top, bottom):
-    r = CORNER
-    return 'M%s %s V%s A%s %s 0 0 1 %s %s H%s A%s %s 0 0 1 %s %s V%s Z' % (
-        f(x), f(bottom), f(top + r), f(r), f(r), f(x + r), f(top),
-        f(x + BAR - r), f(r), f(r), f(x + BAR), f(top + r), f(bottom))
+    return 'M%s %s V%s H%s V%s Z' % (f(x), f(bottom), f(top), f(x + BAR), f(bottom))
 
 
 def svg(bars, seed, guide):
