@@ -5,18 +5,18 @@
 // 8/3 of that size so pixel art and the number stay sharp up close.
 
 export const CARD_TEXTURE = Object.freeze({ width: 2000, height: 2800 });
-const TEMPLATE = Object.freeze({ width: 750, height: 1050 });
+export const TEMPLATE = Object.freeze({ width: 750, height: 1050 });
 // The supplied template that already carries "#4354" (the mascot) is used
 // as-is for that number, so the default card is exactly the approved file.
 const TEMPLATE_NUMBER = 4354;
 const SCALE = CARD_TEXTURE.width / TEMPLATE.width;
 
 // Transparent art window inside the black frame line (alpha mask bounds).
-const WINDOW = Object.freeze({ x: 37, y: 32, width: 673, height: 883 });
+export const WINDOW = Object.freeze({ x: 37, y: 32, width: 673, height: 883 });
 // Art placement: centred on the card, bottom edge on the outer edge of the
 // frame's black outline, scaled to the approved sample (square art, 907.2 px
 // tall; the sides fall under the frame).
-const ART = Object.freeze({ centerX: 375, bottom: 920.25, height: 907.2 });
+export const ART = Object.freeze({ centerX: 375, bottom: 920.25, height: 907.2 });
 
 // Token number: Franklin Gothic Heavy 16 pt (66.7 px @ 300 dpi), #ff6f00,
 // rotated with the ribbon and centred on the sample's ink box. If a licensed

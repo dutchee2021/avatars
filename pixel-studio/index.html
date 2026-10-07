@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Every relative URL resolves inside The Card Wall build, so the shared
+       modules find their assets (slab model, card frame, label, fonts). -->
+  <base href="../thecardwall/">
+  <title>Pixel Studio | THECARDWALL.COM</title>
+  <meta name="theme-color" content="#050607">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../pixel-studio/studio.css">
+</head>
+<body>
+  <header class="top">
+    <img class="logo" src="assets/m-nav-logo.png" alt="MOX" draggable="false">
+    <div class="title">
+      <p class="eyebrow">THECARDWALL.COM</p>
+      <h1>PIXEL STUDIO</h1>
+    </div>
+    <form class="token-form" id="tokenForm" autocomplete="off" novalidate>
+      <select id="collection" aria-label="Collection">
+        <option value="stonkbrokers">STONKBROKERS</option>
+        <option value="interns">THE INTERNS</option>
+      </select>
+      <input id="tokenId" type="number" inputmode="numeric" min="1" max="8888" value="4354" aria-label="Token ID">
+      <button class="btn primary" type="submit">LOAD</button>
+    </form>
+  </header>
+
+  <main class="workspace">
+    <section class="panel editor" aria-label="120 x 120 pixel grid">
+      <div class="toolbar" role="toolbar" aria-label="Drawing tools">
+        <div class="group" role="radiogroup" aria-label="Tool">
+          <button class="tool active" type="button" data-tool="pencil" title="Pencil (B)" aria-pressed="true">
+            <svg viewBox="0 0 24 24"><path d="M4 20l1-5L15.5 4.5a2.1 2.1 0 0 1 3 3L8 18z"/><path d="M13.5 6.5l3 3"/></svg>
+          </button>
+          <button class="tool" type="button" data-tool="fill" title="Fill (G)" aria-pressed="false">
+            <svg viewBox="0 0 24 24"><path d="M5 11l7-7 7 7-7 7z"/><path d="M5 11h14"/><path d="M20 15c0 1.5-1 2.5-1 3.5a1 1 0 0 0 2 0c0-1-1-2-1-3.5z"/></svg>
+          </button>
+          <button class="tool" type="button" data-tool="picker" title="Pick colour (I, or Alt-click)" aria-pressed="false">
+            <svg viewBox="0 0 24 24"><path d="M14 4l6 6-2 2-6-6z"/><path d="M13 7L5 15v4h4l8-8"/></svg>
+          </button>
+        </div>
+        <div class="group colour">
+          <input id="colourWell" type="color" value="#d7262e" aria-label="Colour">
+          <input id="hex" type="text" value="#D7262E" maxlength="7" spellcheck="false" aria-label="Hex code">
+        </div>
+        <div class="group">
+          <button class="toggle" type="button" id="blockMode" aria-pressed="false" title="Paint whole 5 x 5 blocks (the 24 x 24 grid)">5×5</button>
+          <button class="toggle on" type="button" id="gridLines" aria-pressed="true" title="Grid lines">GRID</button>
+          <button class="toggle on" type="button" id="frameGuide" aria-pressed="true" title="Show the card frame over the art">FRAME</button>
+        </div>
+        <div class="group">
+          <button class="tool" type="button" id="undo" title="Undo (Ctrl+Z)">
+            <svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>
+          </button>
+          <button class="tool" type="button" id="redo" title="Redo (Ctrl+Shift+Z)">
+            <svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="canvas-wrap" id="canvasWrap">
+        <canvas id="grid" width="720" height="720" aria-label="Pixel grid, 120 by 120"></canvas>
+      </div>
+
+      <div class="palette-row">
+        <span class="label">COLOURS IN THIS ART</span>
+        <div class="palette" id="palette"></div>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite">LOADING…</p>
+    </section>
+
+    <section class="panel preview" aria-label="Slab preview">
+      <div class="stage" id="stage"></div>
+      <div class="preview-bar">
+        <div class="group">
+          <button class="toggle" type="button" id="spin" aria-pressed="false" title="Turn the slab slowly">SPIN</button>
+          <button class="btn" type="button" id="viewFront">FRONT</button>
+          <button class="btn" type="button" id="viewBack">BACK</button>
+        </div>
+        <div class="group">
+          <button class="btn" type="button" id="savePng" title="120 x 120 PNG">PNG</button>
+          <button class="btn" type="button" id="savePngLarge" title="1200 x 1200 PNG">PNG ×10</button>
+          <button class="btn" type="button" id="saveSvg" title="120 x 120 SVG">SVG</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="../pixel-studio/studio.js"></script>
+</body>
+</html>
